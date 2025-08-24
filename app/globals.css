@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* optional global tweaks */
+html,
+body {
+  height: 100%;
+  background: #f9fafb;
+}
