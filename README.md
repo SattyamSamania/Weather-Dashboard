@@ -19,7 +19,7 @@ Displays current weather and 5-day forecasts for multiple cities with features l
 
 ## **Tech Stack**
 
-- **Frontend:** Next.js 13 (App Router)
+- **Frontend:** Next.js
 - **Styling:** Tailwind CSS
 - **State Management:** React `useState` & `useEffect`
 - **API Integration:** RESTful calls to backend (e.g., weather service)
@@ -45,6 +45,7 @@ npm install
 
 ```bash
 NEXT_PUBLIC_WEATHER_API_KEY=your_openweathermap_api_key
+MONGODB_URI=your_mongodb_connection_string
 ```
 
 4. Run the development server:
