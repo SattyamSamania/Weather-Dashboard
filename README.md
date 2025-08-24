@@ -56,3 +56,19 @@ npm run dev
 
 Open http://localhost:3000
 in your browser.
+
+5. Backend Setup
+
+The backend is built as Next.js API routes:
+
+Weather API Route:
+
+```bash
+http://localhost:3000/api/weather?city=<city_name>
+```
+
+Fetches current weather and 5-day forecast.
+
+Implements in-memory caching (TTL: 10 min).
+
+Persists cache in MongoDB (weatherCache collection).
