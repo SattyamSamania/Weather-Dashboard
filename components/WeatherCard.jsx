@@ -95,9 +95,9 @@ export default function WeatherCard({ city, onRemove }) {
   const { current, forecast } = data;
 
   return (
-    <div className="relative rounded-2xl p-6 bg-gradient-to-br from-blue-400 via-sky-500 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+    <div className="relative rounded-2xl p-6 bg-gradient-to-br from-blue-500 via-sky-600 to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
       {/* Header */}
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-bold">{current.name}</h2>
         <button
           onClick={() => onRemove(city)}
@@ -108,15 +108,26 @@ export default function WeatherCard({ city, onRemove }) {
       </div>
 
       {/* Current Weather */}
-      <p className="text-2xl font-semibold">
-        {Math.round(current.main.temp)}°C
-      </p>
-      <p className="capitalize">{current.weather[0].description}</p>
+      <div className="flex items-center gap-3">
+        <img
+          src={`https://openweathermap.org/img/wn/${current.weather[0].icon}@2x.png`}
+          alt="Weather Icon"
+          className="w-12 h-12"
+        />
+        <div>
+          <p className="text-2xl font-semibold">
+            {Math.round(current.main.temp)}°C
+          </p>
+          <p className="capitalize text-sm opacity-90">
+            {current.weather[0].description}
+          </p>
+        </div>
+      </div>
 
       {/* 5-day Forecast */}
-      <div className="mt-4 grid grid-cols-5 gap-2 text-center text-sm">
+      <div className="mt-5 grid grid-cols-5 gap-2 text-center text-sm">
         {forecast.list
-          .filter((_, i) => i % 8 === 0)
+          .filter((_, i) => i % 8 === 0) // pick 1 entry per day
           .slice(0, 5)
           .map((item) => {
             const d = new Date(item.dt_txt);
@@ -124,9 +135,14 @@ export default function WeatherCard({ city, onRemove }) {
             return (
               <div
                 key={item.dt}
-                className="bg-white/20 rounded-lg p-2 backdrop-blur-sm"
+                className="bg-white/20 rounded-lg p-2 backdrop-blur-sm hover:bg-white/30 transition"
               >
                 <div className="font-semibold">{day}</div>
+                <img
+                  src={`https://openweathermap.org/img/wn/${item.weather[0].icon}.png`}
+                  alt="Forecast Icon"
+                  className="mx-auto w-8 h-8"
+                />
                 <div>{Math.round(item.main.temp)}°</div>
               </div>
             );

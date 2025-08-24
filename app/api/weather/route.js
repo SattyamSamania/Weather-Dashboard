@@ -7,6 +7,9 @@ const DEFAULT_COUNTRY = "IN";
 
 export async function GET(req) {
     try {
+        if (!API_KEY) {
+            return NextResponse.json({ error: "Missing API key" }, { status: 500 });
+        }
         const { searchParams } = new URL(req.url);
         let city = searchParams.get("city");
 
@@ -17,38 +20,32 @@ export async function GET(req) {
         city = city.trim();
         const encoded = encodeURIComponent(city);
 
-        const currentUrl = `${BASE}/weather?q=${encoded}&appid=${API_KEY}&units=metric`;
-        const forecastUrl = `${BASE}/forecast?q=${encoded}&appid=${API_KEY}&units=metric`;
-
-        let resCurrent = await fetch(currentUrl);
-        let resForecast = await fetch(forecastUrl);
+        let resCurrent = await fetch(`${BASE}/weather?q=${encoded}&appid=${API_KEY}&units=metric`);
+        let resForecast = await fetch(`${BASE}/forecast?q=${encoded}&appid=${API_KEY}&units=metric`);
 
         if (resCurrent.status === 404 || resForecast.status === 404) {
             const encodedWithCountry = encodeURIComponent(`${city},${DEFAULT_COUNTRY}`);
-            resCurrent = await fetch(
-                `${BASE}/weather?q=${encodedWithCountry}&appid=${API_KEY}&units=metric`
-            );
-            resForecast = await fetch(
-                `${BASE}/forecast?q=${encodedWithCountry}&appid=${API_KEY}&units=metric`
-            );
+            resCurrent = await fetch(`${BASE}/weather?q=${encodedWithCountry}&appid=${API_KEY}&units=metric`);
+            resForecast = await fetch(`${BASE}/forecast?q=${encodedWithCountry}&appid=${API_KEY}&units=metric`);
         }
 
-        const current = await resCurrent.json();
-        const forecast = await resForecast.json();
-
         if (!resCurrent.ok) {
+            const err = await resCurrent.json().catch(() => ({}));
             return NextResponse.json(
-                { error: current?.message || "Failed to fetch current weather" },
+                { error: err?.message || "Failed to fetch current weather" },
                 { status: resCurrent.status }
             );
         }
 
         if (!resForecast.ok) {
+            const err = await resForecast.json().catch(() => ({}));
             return NextResponse.json(
-                { error: forecast?.message || "Failed to fetch forecast" },
+                { error: err?.message || "Failed to fetch forecast" },
                 { status: resForecast.status }
             );
         }
+        const current = await resCurrent.json();
+        const forecast = await resForecast.json();
 
         return NextResponse.json({ current, forecast });
     } catch (err) {

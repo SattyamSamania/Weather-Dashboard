@@ -1,30 +1,50 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
-import { User } from "../../../models/User";
+import { connectDB } from "@/lib/mongodb";
+import UserPreferences from "@/lib/models/Preferences";
 
-const MONGO_URI = process.env.MONGO_URI;
-if (!mongoose.connection.readyState) {
-    mongoose.connect(MONGO_URI);
-}
+const USER_ID = "guest";
 
-export async function GET(req) {
-    const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email");
-    if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
+export async function GET() {
+    await connectDB();
+    let prefs = await UserPreferences.findOne({ userId: USER_ID });
 
-    const user = await User.findOne({ email });
-    return NextResponse.json(user?.preferences || []);
+    if (!prefs) {
+        prefs = await UserPreferences.create({ userId: USER_ID, favorites: [] });
+    }
+
+    return NextResponse.json(prefs);
 }
 
 export async function POST(req) {
-    const body = await req.json();
-    const { email, city } = body;
-    if (!email || !city) return NextResponse.json({ error: "Email and city required" }, { status: 400 });
+    await connectDB();
+    const { city } = await req.json();
 
-    let user = await User.findOne({ email });
-    if (!user) user = new User({ email, preferences: [city] });
-    else if (!user.preferences.includes(city)) user.preferences.push(city);
+    if (!city) {
+        return NextResponse.json({ error: "City is required" }, { status: 400 });
+    }
 
-    await user.save();
-    return NextResponse.json(user.preferences);
+    const prefs = await UserPreferences.findOneAndUpdate(
+        { userId: USER_ID },
+        { $addToSet: { favorites: city.toLowerCase() } }, // prevents duplicates
+        { upsert: true, new: true }
+    );
+
+    return NextResponse.json(prefs);
+}
+
+export async function DELETE(req) {
+    await connectDB();
+    const { city } = await req.json();
+
+    if (!city) {
+        return NextResponse.json({ error: "City is required" }, { status: 400 });
+    }
+
+    const prefs = await UserPreferences.findOneAndUpdate(
+        { userId: USER_ID },
+        { $pull: { favorites: city.toLowerCase() } },
+        { new: true }
+    );
+
+    return NextResponse.json(prefs);
 }
